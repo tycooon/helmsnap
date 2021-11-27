@@ -13,7 +13,7 @@ class Helmsnap::Check
 
   def call
     Dir.mktmpdir do |temp_dir|
-      pp temp_dir_path = Pathname.new(temp_dir)
+      temp_dir_path = Pathname.new(temp_dir)
 
       Helmsnap::Generate.call(
         chart_path: chart_path,

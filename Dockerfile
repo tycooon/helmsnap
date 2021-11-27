@@ -1,6 +1,6 @@
-FROM ruby:3.0.2-alpine
+FROM alpine/helm
 
-RUN apk add --update --no-cache git
+RUN apk add --update --no-cache ruby git colordiff
 
 WORKDIR /app
 
@@ -8,4 +8,5 @@ COPY . .
 
 RUN gem build && gem install helmsnap --local
 
-ENTRYPOINT [ "helmsnap" ]
+ENTRYPOINT []
+CMD []
