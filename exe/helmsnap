@@ -3,10 +3,4 @@
 
 require_relative "../lib/helmsnap"
 
-options = Helmsnap::ArgsParser.new(ARGV).get_options!
-
-Helmsnap::Generate.call(
-  chart_path: options.chart_path,
-  snapshots_path: options.snapshots_path,
-  values_path: options.values_path,
-)
+Helmsnap::Runner.call(ARGV)

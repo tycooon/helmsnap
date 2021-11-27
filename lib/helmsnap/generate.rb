@@ -12,21 +12,23 @@ class Helmsnap::Generate
   end
 
   def call
-    dep_list = run_cmd! "helm", "dependency", "list", "--max-col-width", 0, chart_path
+    dep_list = run_cmd!("helm", "dependency", "list", "--max-col-width", 0, chart_path)
 
     dep_list.scan(%r{file://(.+?)\t}) do |dep_path|
-      run_cmd! "helm", "dependency", "update", "--skip-refresh", chart_path.join(dep_path.first)
+      run_cmd!("helm", "dependency", "update", "--skip-refresh", chart_path.join(dep_path.first))
     end
 
     dep_list.scan(%r{(https?://.+?)\t}) do |dep_path|
-      run_cmd! "helm", "repo", "add", Digest::MD5.hexdigest(dep_path.first), dep_path.first
+      run_cmd!("helm", "repo", "add", Digest::MD5.hexdigest(dep_path.first), dep_path.first)
     end
 
-    run_cmd! "helm", "dependency", "update", "--skip-refresh", chart_path
+    run_cmd!("helm", "dependency", "update", "--skip-refresh", chart_path)
 
     FileUtils.rmtree(snapshots_path)
 
-    run_cmd! "helm", "template", chart_path, "--values", values_path, "--output-dir", snapshots_path
+    run_cmd!(
+      "helm", "template", chart_path, "--values", values_path, "--output-dir", snapshots_path
+    )
 
     snapshots_path.glob(["**/*yaml", "**/*.yml"]).each do |path|
       content = path.read
@@ -39,8 +41,7 @@ class Helmsnap::Generate
 
   attr_accessor :chart_path, :snapshots_path, :values_path
 
-  def run_cmd!(*cmd_parts)
-    cmd = Shellwords.join(cmd_parts)
-    Helmsnap::Command.call(cmd)
+  def run_cmd!(...)
+    Helmsnap.run_cmd!(...)
   end
 end
