@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN gem build && gem install helmsnap --local
+RUN gem install colorize && gem build && gem install helmsnap --local
 
 ENTRYPOINT []
 CMD []
