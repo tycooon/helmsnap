@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    helmsnap (0.1.0)
+    helmsnap (0.2.1)
 
 GEM
   remote: https://rubygems.org/
@@ -84,6 +84,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   helmsnap!
@@ -94,4 +95,4 @@ DEPENDENCIES
   rubocop-config-umbrellio
 
 BUNDLED WITH
-   2.2.31
+   2.2.32

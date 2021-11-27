@@ -32,7 +32,7 @@ class Helmsnap::ArgsParser
 
   attr_accessor :options, :parser, :args
 
-  def build_parser
+  def build_parser # rubocop:disable Metrics/MethodLength
     OptionParser.new(BANNER, 50) do |opts|
       opts.separator("Supported commands: `generate` and `check`.")
       opts.separator("")
