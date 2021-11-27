@@ -15,7 +15,7 @@ class Helmsnap::Command
   end
 
   def call
-    puts "\e[1m\e[33m#{cmd}\e[0m\e[22m"
+    Helmsnap::Console.info(stdout, "> #{cmd}")
     run_command
   end
 
@@ -28,7 +28,7 @@ class Helmsnap::Command
       output = +""
 
       while (chunk = out.gets)
-        stdout.print(chunk)
+        Helmsnap::Console.print(stdout, chunk)
         output << chunk
       end
 
@@ -36,11 +36,12 @@ class Helmsnap::Command
       success = exit_status.success?
 
       if !success && !allow_failure
-        stderr.print(err.read)
-        abort "Command failed with status #{exit_status.to_i}"
+        Helmsnap::Console.error(stderr, err.read, :red)
+        Helmsnap::Console.error(stderr, "Command failed with status #{exit_status.to_i}", :red)
+        abort
       end
 
-      stdout.puts
+      Helmsnap::Console.print(stdout, "\n")
       Result.new(success, output)
     end
   end

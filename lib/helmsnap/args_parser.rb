@@ -23,8 +23,8 @@ class Helmsnap::ArgsParser
   end
 
   def print_help!(msg)
-    puts msg, nil
-    puts parser.help
+    Helmsnap::Console.error($stderr, "#{msg}\n") if msg
+    Helmsnap::Console.print($stdout, parser.help)
     exit 1
   end
 
@@ -51,12 +51,12 @@ class Helmsnap::ArgsParser
       end
 
       opts.on("--version", "Show version") do
-        puts Helmsnap::VERSION
+        Helmsnap::Console.print($stdout, "#{Helmsnap::VERSION}\n")
         exit
       end
 
       opts.on("-h", "--help", "Show this message") do
-        puts opts.help
+        print_help!(nil)
         exit
       end
     end

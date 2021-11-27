@@ -8,9 +8,12 @@ require "pathname"
 require "shellwords"
 require "tmpdir"
 
+require "colorized_string"
+
 module Helmsnap
   require_relative "helmsnap/args_parser"
   require_relative "helmsnap/check"
+  require_relative "helmsnap/console"
   require_relative "helmsnap/command"
   require_relative "helmsnap/generate"
   require_relative "helmsnap/runner"

@@ -39,15 +39,19 @@ class Helmsnap::Runner
 
   def generate!
     Helmsnap::Generate.call(**options.to_h)
-    puts "Snapshots generated successfully."
+    Helmsnap::Console.info($stdout, "Snapshots generated successfully.")
   end
 
   def check!
     if Helmsnap::Check.call(**options.to_h)
-      puts "Snapshots are up-to-date."
+      Helmsnap::Console.info($stdout, "Snapshots are up-to-date.")
     else
-      puts "Snapshots are outdated, you should check the diff above and either fix your chart or " \
-           "update the snapshots using `helmsnap generate` command."
+      Helmsnap::Console.error(
+        $stdout,
+        "Snapshots are outdated, you should check the diff above and either fix your chart or " \
+        "update the snapshots using `helmsnap generate` command.",
+      )
+
       exit 1
     end
   end
