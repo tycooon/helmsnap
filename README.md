@@ -4,14 +4,21 @@
 
 Helmsnap is a tool for generating and checking helm chart snapshots. Example:
 
+Generate snapshots (uses `helm template` under the hood):
+
 ```sh
-# This will generate snapshots using helm template command
 helmsnap generate -c helm/mychart -s helm/snapshots -f helm/values/production.yaml
+```
 
-# This will generate snapshots in some temp directory and check (diff) them against existing snapshots in `helm/snapshots` directory
+Generate snapshots in some temp directory and check (diff) them against existing snapshots in `helm/snapshots` directory:
+
+```sh
 helmsnap check -c helm/mychart -s helm/snapshots -f helm/values/production.yaml
+```
 
-# Get the full description of possible arguments
+Get the full description of possible arguments:
+
+```sh
 helmsnap --help
 ```
 
@@ -33,25 +40,13 @@ Helmsnap will automically replace all occurencies of patterns that look like tim
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem "helmsnap"
-```
-
-And then execute:
-
-```sh
-bundle install
-```
-
-Or install it yourself as:
+Just install a gem and use the provided `helmsnap` binary.
 
 ```sh
 gem install helmsnap
 ```
 
-Alaternatively, you can use a [Docker image](https://github.com/tycooon/helmsnap/pkgs/container/helmsnap) with Ruby, helm and helmsnap gem preinstalled.
+Alaternatively, you can use a [Docker image](https://github.com/tycooon/helmsnap/pkgs/container/helmsnap) with Ruby, helm and helmsnap gem preinstalled. This is useful for CIs or if you don't want to install Ruby locally.
 
 ## Contributing
 
