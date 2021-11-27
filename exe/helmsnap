@@ -1,0 +1,117 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "digest"
+require "fileutils"
+require "open3"
+require "optparse"
+require "pathname"
+require "shellwords"
+
+def run(*cmd_parts)
+  cmd = Shellwords.join(cmd_parts)
+
+  puts "\e[1m\e[33m#{cmd}\e[0m\e[22m"
+
+  Open3.popen3(cmd) do |_stdin, stdout, stderr, wait_thr|
+    output = +""
+
+    while chunk = stdout.gets
+      $stdout.print(chunk)
+      output << chunk
+    end
+
+    exit_status = wait_thr.value
+
+    unless exit_status.success?
+      $stderr.print(stderr.read)
+      abort "Command failed with status #{exit_status.to_i}"
+    end
+
+    puts
+    output
+  end
+end
+
+class ArgsParser
+  Args = Struct.new(:chart, :snapshots, :values)
+  MissingOption = Class.new(OptionParser::ParseError)
+
+  def initialize(options)
+    self.options = options
+    self.args = Args.new("k8s/chart", "k8s/snapshots")
+    self.parser = build_parser
+  end
+
+  def get_options!
+    parser.parse!(options)
+    raise MissingOption, "missing option: VALUES" unless args.values
+    args
+  rescue OptionParser::ParseError => e
+    puts e, nil
+    print_help!
+    exit 1
+  end
+
+  private
+
+  attr_accessor :options, :parser, :args
+
+  def build_parser
+    OptionParser.new do |opts|
+      opts.banner = "Usage: render-helm [options]"
+
+      opts.on("-c", "--chart-dir [DIR]",
+              "Chart directory (default: #{args.chart})") do |option|
+        args.chart = option
+      end
+
+      opts.on("-s", "--snapshots-dir DIR",
+              "Snapshots directory (default #{args.snapshots})") do |option|
+        args.snapshots = option
+      end
+
+      opts.on("-v", "--values VALUES", "Values file") do |option|
+        args.values = option
+      end
+
+      opts.on("-h", "--help", "Show this message") do
+        puts opts
+        exit
+      end
+    end
+  end
+
+  def print_help!
+    puts parser.help
+  end
+end
+
+options = ArgsParser.new(ARGV).get_options!
+
+chart_path = Pathname.new(options.chart)
+snapshots_path = Pathname.new(options.snapshots)
+
+dep_list = run "helm", "dependency", "list", "--max-col-width", 0, chart_path
+
+dep_list.scan(%r{file://(.+?)\t}) do |dep_path|
+  run "helm", "dependency", "update", "--skip-refresh", chart_path.join(dep_path.first)
+end
+
+dep_list.scan(%r{(https?://.+?)\t}) do |dep_path|
+  run "helm", "repo", "add", Digest::MD5.hexdigest(dep_path.first), dep_path.first
+end
+
+run "helm", "dependency", "update", "--skip-refresh", chart_path
+
+FileUtils.rmtree(snapshots_path)
+
+run "helm", "template", chart_path,
+    "--values", options.values,
+    "--output-dir", snapshots_path
+
+snapshots_path.glob(["**/*yaml", "**/*.yml"]).each do |path|
+  content = path.read
+  content.gsub!(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+/, "2022-01-01 00:00:00.000") or next
+  path.write(content)
+end
