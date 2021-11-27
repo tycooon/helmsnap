@@ -18,8 +18,8 @@ module Helmsnap
 
   class Error < StandardError; end
 
-  def self.run_cmd!(*cmd_parts)
+  def self.run_cmd(*cmd_parts, **options)
     cmd = Shellwords.join(cmd_parts)
-    Helmsnap::Command.call(cmd)
+    Helmsnap::Command.call(cmd, **options)
   end
 end

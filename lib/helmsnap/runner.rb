@@ -11,7 +11,7 @@ class Helmsnap::Runner
 
   def call
     parser = Helmsnap::ArgsParser.new(args)
-    options = parser.get_options!
+    self.options = parser.get_options!
 
     cmd, *rest = args
 
@@ -25,9 +25,9 @@ class Helmsnap::Runner
 
     case cmd
     when "generate"
-      Helmsnap::Generate.call(**options.to_h)
+      generate!
     when "check"
-      Helmsnap::Check.call(**options.to_h)
+      check!
     else
       parser.print_help!("Unknown command: #{cmd}.")
     end
@@ -35,5 +35,20 @@ class Helmsnap::Runner
 
   private
 
-  attr_accessor :args
+  attr_accessor :args, :options
+
+  def generate!
+    Helmsnap::Generate.call(**options.to_h)
+    puts "Snapshots generated successfully."
+  end
+
+  def check!
+    if Helmsnap::Check.call(**options.to_h)
+      puts "Snapshots are up-to-date."
+    else
+      puts "Snapshots are outdated, you should check the diff above and either fix your chart or " \
+           "update the snapshots using `helmsnap generate` command."
+      exit 1
+    end
+  end
 end
