@@ -4,6 +4,8 @@ class Helmsnap::ArgsParser
   Args = Struct.new(:chart_path, :snapshots_path, :values_path, keyword_init: true)
   MissingOption = Class.new(OptionParser::ParseError)
 
+  BANNER = "Usage: helmsnap CMD [options]"
+
   def initialize(options)
     self.options = options
     self.args = Args.new
@@ -31,8 +33,7 @@ class Helmsnap::ArgsParser
   attr_accessor :options, :parser, :args
 
   def build_parser
-    OptionParser.new do |opts|
-      opts.banner = "Usage: helmsnap CMD [options]"
+    OptionParser.new(BANNER, 50) do |opts|
       opts.separator("Supported commands: `generate` and `check`.")
       opts.separator("")
       opts.separator("Specific options:")
@@ -49,8 +50,13 @@ class Helmsnap::ArgsParser
         args.values_path = pn(option)
       end
 
+      opts.on("--version", "Show version") do
+        puts Helmsnap::VERSION
+        exit
+      end
+
       opts.on("-h", "--help", "Show this message") do
-        puts opts
+        puts opts.help
         exit
       end
     end
