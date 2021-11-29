@@ -36,8 +36,8 @@ class Helmsnap::Command
       success = exit_status.success?
 
       if !success && !allow_failure
-        Helmsnap::Console.error(stderr, err.read, :red)
-        Helmsnap::Console.error(stderr, "Command failed with status #{exit_status.to_i}", :red)
+        Helmsnap::Console.error(stderr, err.read)
+        Helmsnap::Console.error(stderr, "Command failed with status #{exit_status.to_i}")
         abort
       end
 
