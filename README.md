@@ -55,9 +55,7 @@ Example job for Gitlab CI:
 ```yaml
 check-snapshots:
   stage: test
-  image:
-    name: ghcr.io/tycooon/helmsnap:master
-    entrypoint: []
+  image: ghcr.io/tycooon/helmsnap:latest
   script: helmsnap check -c helm/mychart -s helm/snapshots -v helm/values/production.yaml
 ```
 
