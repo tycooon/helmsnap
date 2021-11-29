@@ -28,6 +28,8 @@ The typical usage flow:
 2. You add `helmsnap check` command to your CI (or run it manually on every commit).
 3. In case snapshots differ, you should carefully check the updates and either fix your chart or update the snapshots using `helmsnap generate`.
 
+This tool can also be useful when you are developing a new chart or updating an existing one: you can generate snapshots and see what is rendered without need to deploy the chart in your cluster.
+
 ## Features
 
 ### Helm dependency management
