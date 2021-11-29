@@ -46,10 +46,19 @@ class Helmsnap::Runner
     if Helmsnap::Check.call(**options.to_h)
       Helmsnap::Console.info($stdout, "Snapshots are up-to-date.")
     else
+      example_cmd = Shellwords.join(
+        [
+          "helmsnap", "generate",
+          "--chart-dir", options.chart_path,
+          "--snapshots-dir", options.snapshots_path,
+          "--values", options.values_path
+        ],
+      )
+
       Helmsnap::Console.error(
         $stdout,
-        "Snapshots are outdated, you should check the diff above and either fix your chart or " \
-        "update the snapshots using `helmsnap generate` command.",
+        "Snapshots are outdated. You should check the diff above and either fix your chart or " \
+        "update the snapshots using the following command:\n> #{example_cmd}",
       )
 
       exit 1
