@@ -24,7 +24,10 @@ class Helmsnap::Check
       result = Helmsnap.run_cmd("which", "colordiff", allow_failure: true)
       util = result.success ? "colordiff" : "diff"
 
-      diff = Helmsnap.run_cmd(util, "-r", temp_dir_path, snapshots_path, allow_failure: true).output
+      diff = Helmsnap.run_cmd(
+        util, "--unified", "--recursive", snapshots_path, temp_dir_path, allow_failure: true
+      ).output
+
       diff.strip.empty?
     end
   end
