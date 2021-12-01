@@ -12,24 +12,24 @@ class Helmsnap::Check
   end
 
   def call
-    Dir.mktmpdir do |temp_dir|
-      temp_dir_path = Pathname.new(temp_dir)
+    temp_dir_path = Pathname.new(Dir.mktmpdir)
 
-      Helmsnap::Generate.call(
-        chart_path: chart_path,
-        snapshots_path: temp_dir_path,
-        values_path: values_path,
-      )
+    Helmsnap::Generate.call(
+      chart_path: chart_path,
+      snapshots_path: temp_dir_path,
+      values_path: values_path,
+    )
 
-      result = Helmsnap.run_cmd("which", "colordiff", allow_failure: true)
-      util = result.success ? "colordiff" : "diff"
+    result = Helmsnap.run_cmd("which", "colordiff", allow_failure: true)
+    util = result.success ? "colordiff" : "diff"
 
-      diff = Helmsnap.run_cmd(
-        util, "--unified", "--recursive", snapshots_path, temp_dir_path, allow_failure: true
-      ).output
+    diff = Helmsnap.run_cmd(
+      util, "--unified", "--recursive", snapshots_path, temp_dir_path, allow_failure: true
+    ).output
 
-      diff.strip.empty?
-    end
+    diff.strip.empty?
+  ensure
+    FileUtils.rmtree(temp_dir_path)
   end
 
   private
