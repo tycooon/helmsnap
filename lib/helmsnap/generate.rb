@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
-class Helmsnap::Generate
-  def self.call(...)
-    new(...).call
-  end
-
+class Helmsnap::Generate < Helmsnap::Service
   def initialize(chart_path:, snapshots_path:, values_path:)
+    super()
     self.chart_path = chart_path
     self.snapshots_path = snapshots_path
     self.values_path = values_path
@@ -30,8 +27,4 @@ class Helmsnap::Generate
   private
 
   attr_accessor :chart_path, :snapshots_path, :values_path
-
-  def run_cmd(...)
-    Helmsnap.run_cmd(...)
-  end
 end

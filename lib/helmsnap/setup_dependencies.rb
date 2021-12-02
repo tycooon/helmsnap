@@ -1,12 +1,9 @@
 # frozen_string_literal: true
 
-class Helmsnap::SetupDependencies
-  def self.call(...)
-    new(...).call
-  end
-
+class Helmsnap::SetupDependencies < Helmsnap::Service
   def initialize(chart_path)
-    self.chart_path = chart_path
+    super()
+    self.chart_path = Pathname.new(chart_path)
   end
 
   def call
@@ -26,8 +23,4 @@ class Helmsnap::SetupDependencies
   private
 
   attr_accessor :chart_path
-
-  def run_cmd(...)
-    Helmsnap.run_cmd(...)
-  end
 end

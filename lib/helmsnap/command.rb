@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-class Helmsnap::Command
+class Helmsnap::Command < Helmsnap::Service
   Result = Struct.new(:success, :output)
 
-  def self.call(...)
-    new(...).call
-  end
-
   def initialize(cmd, stdout: $stdout, stderr: $stderr, allow_failure: false)
+    super()
     self.cmd = cmd
     self.output = +""
     self.stdout = stdout

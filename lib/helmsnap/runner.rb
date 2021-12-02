@@ -1,15 +1,14 @@
 # frozen_string_literal: true
 
-class Helmsnap::Runner
-  def self.call(...)
-    new(...).call
-  end
-
+class Helmsnap::Runner < Helmsnap::Service
   def initialize(args)
+    super()
     self.args = args.dup
   end
 
   def call
+    super()
+
     parser = Helmsnap::ArgsParser.new(args)
     self.options = parser.get_options!
 
