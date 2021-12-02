@@ -38,6 +38,9 @@ class Helmsnap::Command
       Helmsnap::Console.print(stdout, "\n")
       Result.new(success, output)
     end
+  rescue SystemCallError => error
+    handle_error!(error.errno, error.message)
+    Result.new(false, error.message)
   end
 
   def handle_error!(exit_status, err_output)
