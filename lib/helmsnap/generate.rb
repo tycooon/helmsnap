@@ -1,21 +1,30 @@
 # frozen_string_literal: true
 
 class Helmsnap::Generate < Helmsnap::Service
-  def initialize(chart_path:, snapshots_path:, values_path:)
+  def initialize(config, snapshots_path: nil)
     super()
-    self.chart_path = chart_path
-    self.snapshots_path = snapshots_path
-    self.values_path = values_path
+    self.config = config
+    self.snapshots_path = snapshots_path || config.snapshots_path
   end
 
   def call
-    Helmsnap::SetupDependencies.call(chart_path)
-
     FileUtils.rmtree(snapshots_path)
 
-    run_cmd(
-      "helm", "template", chart_path, "--values", values_path, "--output-dir", snapshots_path
-    )
+    config.envs.flat_map(&:release_paths).uniq.each do |release_path|
+      Helmsnap::SetupDependencies.call(release_path)
+    end
+
+    config.envs.each do |env|
+      run_cmd(
+        "helmfile",
+        "--environment",
+        env.name,
+        "template",
+        "--output-dir-template",
+        snapshots_path.join(env.name).join("{{ .Release.Name }}"),
+        "--skip-deps",
+      )
+    end
 
     snapshots_path.glob(["**/*yaml", "**/*.yml"]).each do |path|
       content = path.read
@@ -26,5 +35,5 @@ class Helmsnap::Generate < Helmsnap::Service
 
   private
 
-  attr_accessor :chart_path, :snapshots_path, :values_path
+  attr_accessor :config, :snapshots_path
 end

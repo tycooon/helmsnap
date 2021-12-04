@@ -9,6 +9,7 @@ class Helmsnap::Runner < Helmsnap::Service
   def call
     parser = Helmsnap::ArgsParser.new(args)
     self.options = parser.get_options!
+    self.config = Helmsnap::Config.new(options.config_path)
 
     cmd, *rest = args
 
@@ -32,25 +33,18 @@ class Helmsnap::Runner < Helmsnap::Service
 
   private
 
-  attr_accessor :args, :options
+  attr_accessor :args, :options, :config
 
   def generate!
-    Helmsnap::Generate.call(**options.to_h)
+    Helmsnap::Generate.call(config)
     Helmsnap::Console.info($stdout, "Snapshots generated successfully.")
   end
 
   def check!
-    if Helmsnap::Check.call(**options.to_h)
+    if Helmsnap::Check.call(config)
       Helmsnap::Console.info($stdout, "Snapshots are up-to-date.")
     else
-      example_cmd = Shellwords.join(
-        [
-          "helmsnap", "generate",
-          "--chart-dir", options.chart_path,
-          "--snapshots-dir", options.snapshots_path,
-          "--values", options.values_path
-        ],
-      )
+      example_cmd = Shellwords.join(["helmsnap", "generate", "--config", options.config_path])
 
       Helmsnap::Console.error(
         $stdout,

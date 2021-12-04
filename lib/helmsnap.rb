@@ -7,10 +7,13 @@ require "optparse"
 require "pathname"
 require "shellwords"
 require "tmpdir"
+require "yaml"
 
 require "colorized_string"
 
 module Helmsnap
+  require_relative "helmsnap/config"
+  require_relative "helmsnap/env"
   require_relative "helmsnap/service"
   require_relative "helmsnap/version"
 
