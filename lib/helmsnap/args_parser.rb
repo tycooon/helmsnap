@@ -48,7 +48,7 @@ class Helmsnap::ArgsParser
         args.config_path = path
       end
 
-      opts.on("--version", "Show version") do
+      opts.on("-v", "--version", "Show version") do
         Helmsnap::Console.print($stdout, "#{Helmsnap::VERSION}\n")
         exit
       end
