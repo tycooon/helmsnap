@@ -7,8 +7,6 @@ class Helmsnap::Runner < Helmsnap::Service
   end
 
   def call
-    super()
-
     parser = Helmsnap::ArgsParser.new(args)
     self.options = parser.get_options!
 
