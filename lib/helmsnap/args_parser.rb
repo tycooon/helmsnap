@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 class Helmsnap::ArgsParser
+  InvalidConfigPath = Class.new(RuntimeError)
+
   Args = Struct.new(:config_path)
 
-  DEFAULT_CONFIG_PATH = ".helmsnap.yaml"
+  DEFAULT_CONFIG_PATH = Pathname.new(".helmsnap.yaml")
   CONFIG_PATH_HELP = %{Path to config (default: "#{DEFAULT_CONFIG_PATH}")}
   BANNER = "Usage: helmsnap CMD [options]"
 
@@ -16,8 +18,8 @@ class Helmsnap::ArgsParser
   def get_options!
     parser.parse!(options)
     args
-  rescue OptionParser::ParseError => error
-    print_help!(error)
+  rescue OptionParser::ParseError, InvalidConfigPath => error
+    print_help!(error.message)
   end
 
   def print_help!(msg)
@@ -37,7 +39,13 @@ class Helmsnap::ArgsParser
       opts.separator("Specific options:")
 
       opts.on("-c", "--config CONFIG_PATH", CONFIG_PATH_HELP) do |val|
-        args.config_path = Pathname.new(val)
+        path = Pathname.new(val)
+
+        unless path.file? && path.readable?
+          raise InvalidConfigPath, "Not a readable file: #{val}"
+        end
+
+        args.config_path = path
       end
 
       opts.on("--version", "Show version") do
