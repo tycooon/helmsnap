@@ -4,16 +4,16 @@
 
 Helmsnap is a tool for generating and checking helm chart snapshots. Example:
 
-Generate snapshots (uses `helm template` under the hood):
+Generate snapshots (uses `helmfile template` under the hood):
 
 ```sh
-helmsnap generate -c helm/mychart -s helm/snapshots -v helm/values/production.yaml
+helmsnap generate
 ```
 
-Generate snapshots in some temp directory and check (diff) them against existing snapshots in `helm/snapshots` directory:
+Generate snapshots in a temporary directory and check (diff) them against existing snapshots in `helm/snapshots` directory:
 
 ```sh
-helmsnap check -c helm/mychart -s helm/snapshots -v helm/values/production.yaml
+helmsnap check
 ```
 
 Get the full description of possible arguments:
@@ -29,6 +29,23 @@ The typical usage flow:
 3. In case snapshots differ, you should carefully check the updates and either fix your chart or update the snapshots using `helmsnap generate`.
 
 This tool can also be useful when you are developing a new chart or updating an existing one: you can generate snapshots and see what is rendered without need to deploy the chart in your cluster.
+
+## Configuration
+
+By default, helmsnap will render your helmfile using `default` environment and will place snapshots in `helm/snapshots` directory. If you want to configure that, create a `.helmsnap.yaml` file and put there configuration that looks like this:
+
+```yaml
+envs: [staging, production] # `[default]` by default
+snapshotsPath: somedir/snapshots # `helm/snapshots` by default
+```
+
+You can also override configuration file location using `--config` option.
+
+## Dependencies
+
+- Ruby 2.7+.
+- [Helmfile](https://github.com/roboll/helmfile), which in turn relies on [Helm](https://github.com/helm/helm).
+- Colordiff or diff utility.
 
 ## Features
 
@@ -58,7 +75,7 @@ Example job for Gitlab CI:
 check-snapshots:
   stage: test
   image: ghcr.io/tycooon/helmsnap:latest
-  script: helmsnap check -c helm/mychart -s helm/snapshots -v helm/values/production.yaml
+  script: helmsnap check
 ```
 
 ## Contributing
