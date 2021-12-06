@@ -2,7 +2,7 @@
 
 ## About
 
-Helmsnap is a tool for generating and checking helm chart snapshots. Example:
+Helmsnap is a tool for generating and checking helmfile snapshots. Example:
 
 Generate snapshots (uses `helmfile template` under the hood):
 
