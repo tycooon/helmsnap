@@ -1,19 +1,20 @@
 # frozen_string_literal: true
 
 class Helmsnap::Env
-  attr_reader :name, :release_paths
+  attr_reader :name
 
   def initialize(name)
     self.name = name
-    self.release_paths = get_release_paths
+  end
+
+  def release_paths
+    @release_paths ||= begin
+      json = Helmsnap.run_cmd("helmfile", "--environment", name, "list", "--output", "json").output
+      YAML.load(json).map { |x| x.fetch("chart") }
+    end
   end
 
   private
 
-  attr_writer :name, :release_paths
-
-  def get_release_paths
-    json = Helmsnap.run_cmd("helmfile", "--environment", name, "list", "--output", "json").output
-    YAML.load(json).map { |x| x.fetch("chart") }
-  end
+  attr_writer :name
 end

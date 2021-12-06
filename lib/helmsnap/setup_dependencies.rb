@@ -1,12 +1,22 @@
 # frozen_string_literal: true
 
 class Helmsnap::SetupDependencies < Helmsnap::Service
-  def initialize(chart_path)
+  def initialize(config)
     super()
-    self.chart_path = Pathname.new(chart_path)
+    self.config = config
   end
 
   def call
+    config.envs.flat_map(&:release_paths).uniq.each do |chart_path|
+      setup!(chart_path)
+    end
+  end
+
+  private
+
+  attr_accessor :config
+
+  def setup!(chart_path)
     dep_list = run_cmd("helm", "dependency", "list", "--max-col-width", 0, chart_path).output
 
     dep_list.scan(%r{file://(.+?)\t}) do |dep_path|
@@ -19,8 +29,4 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
 
     run_cmd("helm", "dependency", "update", "--skip-refresh", chart_path)
   end
-
-  private
-
-  attr_accessor :chart_path
 end

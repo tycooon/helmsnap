@@ -34,7 +34,7 @@ class Helmsnap::ArgsParser
 
   def build_parser
     OptionParser.new(BANNER, 50) do |opts|
-      opts.separator("Supported commands: `generate` and `check`.")
+      opts.separator("Supported commands: `generate`, `check` and `dependencies`.")
       opts.separator("")
       opts.separator("Specific options:")
 

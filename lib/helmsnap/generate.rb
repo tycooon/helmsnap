@@ -10,9 +10,7 @@ class Helmsnap::Generate < Helmsnap::Service
   def call
     FileUtils.rmtree(snapshots_path)
 
-    config.envs.flat_map(&:release_paths).uniq.each do |release_path|
-      Helmsnap::SetupDependencies.call(release_path)
-    end
+    Helmsnap::SetupDependencies.call(config)
 
     config.envs.each do |env|
       run_cmd(

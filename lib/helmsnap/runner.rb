@@ -26,6 +26,8 @@ class Helmsnap::Runner < Helmsnap::Service
       generate!
     when "check"
       check!
+    when "dependencies", "deps"
+      setup_deps!
     else
       parser.print_help!("Unknown command: #{cmd}.")
     end
@@ -54,5 +56,9 @@ class Helmsnap::Runner < Helmsnap::Service
 
       exit 1
     end
+  end
+
+  def setup_deps!
+    Helmsnap::SetupDependencies.call(config)
   end
 end

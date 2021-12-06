@@ -16,6 +16,12 @@ Generate snapshots in a temporary directory and check (diff) them against existi
 helmsnap check
 ```
 
+Just build dependencies for each release in a helmfile:
+
+```sh
+helmsnap dependencies # or `helmsnap deps`
+```
+
 Get the full description of possible arguments:
 
 ```sh
