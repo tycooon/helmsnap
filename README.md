@@ -59,13 +59,13 @@ Helmsnap will automically replace all occurencies of patterns that look like tim
 
 ## Installation
 
-Just install a gem and use the provided `helmsnap` binary.
+Just install the gem and use the provided `helmsnap` binary.
 
 ```sh
 gem install helmsnap
 ```
 
-Alaternatively, you can use a [Docker image](https://github.com/tycooon/helmsnap/pkgs/container/helmsnap) with Ruby, helm and helmsnap gem preinstalled. This is useful for CIs or if you don't want to install Ruby locally.
+Alaternatively, you can use the [Docker image](https://github.com/tycooon/helmsnap/pkgs/container/helmsnap) with Ruby, helm and helmsnap gem preinstalled. This is useful for CIs or if you don't want to install Ruby and Helmfile on your machine.
 
 ## CI example
 
