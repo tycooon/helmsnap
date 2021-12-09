@@ -17,7 +17,7 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
   attr_accessor :config
 
   def setup!(chart_path)
-    dep_list = run_cmd("helm", "dependency", "list", "--max-col-width", 0, chart_path).output
+    dep_list = get_dependency_list(chart_path)
 
     dep_list.scan(%r{file://(.+?)\t}) do |dep_path|
       run_cmd("helm", "dependency", "update", "--skip-refresh", chart_path.join(dep_path.first))
@@ -28,5 +28,23 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
     end
 
     run_cmd("helm", "dependency", "update", "--skip-refresh", chart_path)
+  end
+
+  def get_dependency_list(chart_path)
+    base_cmd = ["helm", "dependency", "list", chart_path]
+
+    result = run_cmd(
+      *base_cmd, "--max-col-width", 0, allow_failure: true, stderr: File.open(File::NULL, "w")
+    )
+
+    if result.success
+      result.output
+    else
+      run_cmd(*base_cmd).output.tap do
+        Helmsnap::Console.warning(
+          $stderr, "it looks like your Helm binary is outdated, please update.\n"
+        )
+      end
+    end
   end
 end

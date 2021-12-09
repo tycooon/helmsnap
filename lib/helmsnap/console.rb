@@ -12,6 +12,11 @@ module Helmsnap::Console
     stream.puts(msg)
   end
 
+  def warning(stream, msg)
+    msg = ColorizedString["WARNING: #{msg}"].colorize(:light_blue)
+    stream.puts(msg)
+  end
+
   def error(stream, msg)
     msg = ColorizedString[msg].colorize(:light_red)
     stream.puts(msg)
