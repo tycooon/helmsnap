@@ -10,7 +10,7 @@ class Helmsnap::Env
   def release_paths
     @release_paths ||= begin
       json = Helmsnap.run_cmd("helmfile", "--environment", name, "list", "--output", "json").output
-      YAML.load(json).map { |x| x.fetch("chart") }
+      YAML.load(json).map { |x| Pathname.new(x.fetch("chart")) }
     end
   end
 
