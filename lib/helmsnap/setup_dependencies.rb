@@ -20,14 +20,14 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
     dep_list = get_dependency_list(chart_path)
 
     dep_list.scan(%r{file://(.+?)\t}) do |dep_path|
-      run_cmd("helm", "dependency", "update", "--skip-refresh", chart_path.join(dep_path.first))
+      run_cmd("helm", "dependency", "update", chart_path.join(dep_path.first))
     end
 
     dep_list.scan(%r{(https?://.+?)\t}) do |dep_path|
       run_cmd("helm", "repo", "add", Digest::MD5.hexdigest(dep_path.first), dep_path.first)
     end
 
-    run_cmd("helm", "dependency", "update", "--skip-refresh", chart_path)
+    run_cmd("helm", "dependency", "update", chart_path)
   end
 
   def get_dependency_list(chart_path)
