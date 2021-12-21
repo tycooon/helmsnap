@@ -7,8 +7,8 @@ class Helmsnap::Command < Helmsnap::Service
     super()
     self.cmd = cmd
     self.output = +""
-    self.stdout = stdout
-    self.stderr = stderr
+    self.stdout = stdout || null_file
+    self.stderr = stderr || null_file
     self.allow_failure = allow_failure
   end
 
@@ -20,6 +20,10 @@ class Helmsnap::Command < Helmsnap::Service
   private
 
   attr_accessor :cmd, :output, :stdout, :stderr, :allow_failure
+
+  def null_file
+    File.open(File::NULL, "w")
+  end
 
   def run_command
     Open3.popen3(cmd) do |_in, out, err, wait_thr|

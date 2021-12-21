@@ -20,22 +20,20 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
     dep_list = get_dependency_list(chart_path)
 
     dep_list.scan(%r{file://(.+?)\t}) do |dep_path|
-      run_cmd("helm", "dependency", "update", chart_path.join(dep_path.first))
+      update_deps!(chart_path.join(dep_path.first))
     end
 
     dep_list.scan(%r{(https?://.+?)\t}) do |dep_path|
       run_cmd("helm", "repo", "add", Digest::MD5.hexdigest(dep_path.first), dep_path.first)
     end
 
-    run_cmd("helm", "dependency", "update", chart_path)
+    update_deps!(chart_path)
   end
 
   def get_dependency_list(chart_path)
     base_cmd = ["helm", "dependency", "list", chart_path]
 
-    result = run_cmd(
-      *base_cmd, "--max-col-width", 0, allow_failure: true, stderr: File.open(File::NULL, "w")
-    )
+    result = run_cmd(*base_cmd, "--max-col-width", 0, allow_failure: true, stderr: nil)
 
     if result.success
       result.output
@@ -46,5 +44,12 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
         )
       end
     end
+  end
+
+  def update_deps!(chart_path)
+    base_cmd = ["helm", "dependency", "update", chart_path]
+    result = run_cmd(*base_cmd, "--skip-refresh", allow_failure: true)
+    run_cmd(*base_cmd) unless result.success # Try with deps refresh in case of any failure
+    true
   end
 end

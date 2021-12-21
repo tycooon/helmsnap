@@ -8,9 +8,9 @@ class Helmsnap::Generate < Helmsnap::Service
   end
 
   def call
-    FileUtils.rmtree(snapshots_path)
-
     Helmsnap::SetupDependencies.call(config)
+
+    FileUtils.rmtree(snapshots_path)
 
     config.envs.each do |env|
       run_cmd(
