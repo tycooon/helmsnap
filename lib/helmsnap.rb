@@ -6,6 +6,7 @@ require "open3"
 require "optparse"
 require "pathname"
 require "shellwords"
+require "set"
 require "tmpdir"
 require "yaml"
 
