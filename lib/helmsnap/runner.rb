@@ -51,7 +51,8 @@ class Helmsnap::Runner < Helmsnap::Service
       Helmsnap::Console.error(
         $stdout,
         "Snapshots are outdated. You should check the diff above and either fix your chart or " \
-        "update the snapshots using the following command:\n> #{example_cmd}",
+        "update the snapshots using the following command:\n> #{example_cmd}\n\n" \
+        "Also please make sure that you have the latest version of helmsnap installed.",
       )
 
       exit 1
