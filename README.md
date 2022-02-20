@@ -57,11 +57,11 @@ You can also override configuration file location using `--config` option.
 
 ### Helm dependency management
 
-Helmsnap will automically rebuild your chart dependencies on every snapshot generation or check. In case your dependency is using url to some local helm repo and you don't have a proper repo added, it will add it automically which is useful in CI. It also will detect local dependencies (those that start with `file://`) and rebuild their dependencies as well.
+Helmsnap will automatically rebuild your chart dependencies on every snapshot generation or check. In case your dependency is using url to some local helm repo and you don't have a proper repo added, it will add it automatically which is useful in CI. It also will detect local dependencies (those that start with `file://`) and rebuild their dependencies as well.
 
 ### Timestamp replacement
 
-Helmsnap will automically replace all occurencies of patterns that look like timestamps (format like `2022-01-01 00:00:00.000`) in your templates. This is useful in case you have some annotations like `releaseTime` that would break your snapshots checks otherwise.
+Helmsnap will automatically replace all occurencies of patterns that look like timestamps (format like `2022-01-01 00:00:00.000`) in your templates. This is useful in case you have some annotations like `releaseTime` that would break your snapshots checks otherwise.
 
 ## Installation
 
