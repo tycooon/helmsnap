@@ -51,8 +51,10 @@ class Helmsnap::Runner < Helmsnap::Service
       Helmsnap::Console.error(
         $stdout,
         "Snapshots are outdated. You should check the diff above and either fix your chart or " \
-        "update the snapshots using the following command:\n> #{example_cmd}\n\n" \
-        "Also please make sure that you have the latest version of helmsnap installed.",
+        "update the snapshots using the following command:\n> #{example_cmd}\n" \
+        "Please make sure that you have the latest version of helmsnap installed!\n\n" \
+        "In case you don't have Ruby on your machine, you can use the following Docker command:\n" \
+        "> docker run --rm -it -w /wd -v $PWD:/wd ghcr.io/tycooon/helmsnap #{example_cmd}",
       )
 
       exit 1
