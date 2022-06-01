@@ -71,7 +71,11 @@ Just install the gem and use the provided `helmsnap` binary.
 gem install helmsnap
 ```
 
-Alaternatively, you can use the [Docker image](https://github.com/tycooon/helmsnap/pkgs/container/helmsnap) with Ruby, helm and helmsnap gem preinstalled. This is useful for CIs or if you don't want to install Ruby and Helmfile on your machine.
+Alaternatively, you can use the [Docker image](https://github.com/tycooon/helmsnap/pkgs/container/helmsnap) with Ruby, helm and helmsnap gem preinstalled. This is useful for CIs or if you don't want to install Ruby and Helmfile on your machine. Here is an example docker command that can be used to generate snapshots:
+
+```sh
+docker run --rm -it -w /wd -v $PWD:/wd ghcr.io/tycooon/helmsnap helmsnap generate
+```
 
 ## CI example
 
