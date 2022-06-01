@@ -22,7 +22,7 @@ class Helmsnap::Runner < Helmsnap::Service
     end
 
     case cmd
-    when "generate"
+    when "generate", "gen"
       generate!
     when "check"
       check!

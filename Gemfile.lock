@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    helmsnap (0.8.1)
+    helmsnap (0.9.0)
       colorize
 
 GEM
@@ -96,4 +96,4 @@ DEPENDENCIES
   rubocop-config-umbrellio
 
 BUNDLED WITH
-   2.3.14
+   2.3.15
