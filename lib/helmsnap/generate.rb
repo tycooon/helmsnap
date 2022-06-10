@@ -27,7 +27,8 @@ class Helmsnap::Generate < Helmsnap::Service
     snapshots_path.glob(["**/*yaml", "**/*.yml"]).each do |path|
       content = path.read
       content.gsub!(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+/, "2022-01-01 00:00:00.000")
-      content.gsub!(/\d\d-\d\d-\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00-00")
+      content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00-00")
+      content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00")
       path.write(content)
     end
   end
