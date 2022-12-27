@@ -24,12 +24,12 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
 
     dep_list = get_dependency_list(chart_path)
 
-    dep_list.scan(%r{file://(.+?)\t}) do |dep_path|
+    dep_list.scan(%r{file://(.+?)\s}) do |dep_path|
       subchart_path = chart_path.join(dep_path.first)
       setup!(subchart_path)
     end
 
-    dep_list.scan(%r{(https?://.+?)\t}) do |dep_path|
+    dep_list.scan(%r{(https?://.+?)\s}) do |dep_path|
       run_cmd("helm", "repo", "add", Digest::MD5.hexdigest(dep_path.first), dep_path.first)
     end
 
