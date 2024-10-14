@@ -22,7 +22,7 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
   attr_accessor :config, :processed_paths
 
   def clear_existing_repos!
-    result = run_cmd("helm", "repo", "ls").output
+    result = run_cmd("helm", "repo", "ls", allow_failure: true).output
 
     result.scan(/#{REPO_NAME_PREFIX}\S+/o) do |repo_name|
       run_cmd("helm", "repo", "remove", repo_name)
