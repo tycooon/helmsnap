@@ -6,7 +6,7 @@ class Helmsnap::ArgsParser
   Args = Struct.new(:config_path)
 
   DEFAULT_CONFIG_PATH = Pathname.new(".helmsnap.yaml")
-  CONFIG_PATH_HELP = %{Path to config (default: "#{DEFAULT_CONFIG_PATH}")}
+  CONFIG_PATH_HELP = %{Path to config (default: "#{DEFAULT_CONFIG_PATH}")}.freeze
   BANNER = "Usage: helmsnap CMD [options]"
 
   def initialize(options)

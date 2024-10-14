@@ -49,7 +49,7 @@ You can also override configuration file location using `--config` option.
 
 ## Dependencies
 
-- Ruby 2.7+.
+- Ruby 3.0+.
 - [Helmfile](https://github.com/roboll/helmfile), which in turn relies on [Helm](https://github.com/helm/helm).
 - Colordiff or diff utility.
 

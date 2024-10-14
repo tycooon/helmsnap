@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Helmsnap::SetupDependencies < Helmsnap::Service
+  REPO_NAME_PREFIX = "helmsnap-"
+
   def initialize(config)
     super()
     self.config = config
@@ -8,6 +10,8 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
   end
 
   def call
+    clear_existing_repos!
+
     config.envs.flat_map(&:release_paths).each do |chart_path|
       setup!(chart_path)
     end
@@ -16,6 +20,14 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
   private
 
   attr_accessor :config, :processed_paths
+
+  def clear_existing_repos!
+    result = run_cmd("helm", "repo", "ls").output
+
+    result.scan(/#{REPO_NAME_PREFIX}\S+/o) do |repo_name|
+      run_cmd("helm", "repo", "remove", repo_name)
+    end
+  end
 
   def setup!(chart_path)
     normalized_path = chart_path.expand_path
@@ -30,7 +42,14 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
     end
 
     dep_list.scan(%r{(https?://.+?)\s}) do |dep_path|
-      run_cmd("helm", "repo", "add", Digest::MD5.hexdigest(dep_path.first), dep_path.first)
+      url = dep_path.first
+
+      if (credentials = config.credentials[url])
+        extra_args = ["--username", credentials.username, "--password", credentials.password]
+      end
+
+      repo_name = "#{REPO_NAME_PREFIX}#{Digest::MD5.hexdigest(url)}"
+      run_cmd("helm", "repo", "add", repo_name, url, *extra_args)
     end
 
     update_deps!(chart_path)
