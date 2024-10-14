@@ -38,11 +38,15 @@ This tool can also be useful when you are developing a new chart or updating an 
 
 ## Configuration
 
-By default, helmsnap will render your helmfile using `default` environment and will place snapshots in `helm/snapshots` directory. If you want to configure that, create a `.helmsnap.yaml` file and put there configuration that looks like this:
+By default, helmsnap will render your helmfile using `default` environment and will place snapshots in `helm/snapshots` directory. If you want to configure that, or you need to provide credentials for access to private helm repos, you can create a `.helmsnap.yaml` file and put there configuration that looks like this:
 
 ```yaml
 envs: [staging, production] # `[default]` by default
 snapshotsPath: somedir/snapshots # `helm/snapshots` by default
+credentials: # [] by default
+- repo: https://example.com/some/path/to/repo
+  username: someuser
+  password: somepassword
 ```
 
 You can also override configuration file location using `--config` option.
