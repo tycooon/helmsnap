@@ -42,6 +42,6 @@ class Helmsnap::Generate < Helmsnap::Service
     end
 
     FileUtils.rmtree(snapshots_path)
-    FileUtils.move(tmp_path, snapshots_path)
+    FileUtils.cp_r(tmp_path, snapshots_path)
   end
 end
