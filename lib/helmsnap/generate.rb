@@ -10,8 +10,17 @@ class Helmsnap::Generate < Helmsnap::Service
   def call
     Helmsnap::SetupDependencies.call(config)
 
-    FileUtils.rmtree(snapshots_path)
+    Dir.mktmpdir do |tmpdir|
+      tmp_path = Pathname.new(tmpdir)
+      generate!(tmp_path)
+    end
+  end
 
+  private
+
+  attr_accessor :config, :snapshots_path
+
+  def generate!(tmp_path)
     config.envs.each do |env|
       run_cmd(
         "helmfile",
@@ -19,21 +28,20 @@ class Helmsnap::Generate < Helmsnap::Service
         env.name,
         "template",
         "--output-dir-template",
-        snapshots_path.join(env.name).join("{{ .Release.Name }}"),
+        tmp_path.join(env.name, "{{ .Release.Name }}"),
         "--skip-deps",
       )
     end
 
-    snapshots_path.glob(["**/*yaml", "**/*.yml"]).each do |path|
+    tmp_path.glob(["**/*yaml", "**/*.yml"]).each do |path|
       content = path.read
       content.gsub!(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+/, "2022-01-01 00:00:00.000")
       content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00-00")
       content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00")
       path.write(content)
     end
+
+    FileUtils.rmtree(snapshots_path)
+    FileUtils.move(tmp_path, snapshots_path)
   end
-
-  private
-
-  attr_accessor :config, :snapshots_path
 end
