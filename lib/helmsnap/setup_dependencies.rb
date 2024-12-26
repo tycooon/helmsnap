@@ -44,7 +44,7 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
     dep_list.scan(%r{(https?://.+?)\s}) do |dep_path|
       url = dep_path.first
 
-      if (credentials = config.credentials[url])
+      if (credentials = config.credentials.find { |x| url.start_with?(x.repo) })
         extra_args = ["--username", credentials.username, "--password", credentials.password]
       end
 

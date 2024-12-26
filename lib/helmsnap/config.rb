@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Helmsnap::Config
-  Credentials = Struct.new(:username, :password)
+  Credentials = Struct.new(:repo, :username, :password)
 
   attr_reader :envs, :snapshots_path, :credentials
 
@@ -34,8 +34,8 @@ class Helmsnap::Config
   end
 
   def parse_credentials(yaml)
-    yaml.fetch("credentials", []).each_with_object({}) do |obj, credentials|
-      credentials[obj["repo"]] = Credentials.new(obj["username"], obj["password"])
+    yaml.fetch("credentials", []).map do |obj|
+      Credentials.new(obj["repo"], obj["username"], obj["password"])
     end
   end
 end
