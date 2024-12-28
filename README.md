@@ -49,6 +49,8 @@ credentials: # [] by default
   password: somepassword
 ```
 
+Credentials will be matched by prefix, so if your repo URL is `https://example.com/some/path/to/repo`, you can also put values like `https://example.com/some/path` or `https://example.com` in `credentials.[].repo`.
+
 You can also override configuration file location using `--config` option.
 
 ## Dependencies
