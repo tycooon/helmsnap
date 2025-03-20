@@ -38,12 +38,12 @@ class Helmsnap::Runner < Helmsnap::Service
   attr_accessor :args, :options, :config
 
   def generate!
-    Helmsnap::Generate.call(config)
+    Helmsnap::Generate.call(config, options)
     Helmsnap::Console.info($stdout, "Snapshots generated successfully.")
   end
 
   def check!
-    if Helmsnap::Check.call(config)
+    if Helmsnap::Check.call(config, options)
       Helmsnap::Console.info($stdout, "Snapshots are up-to-date.")
     else
       example_cmd = Shellwords.join(["helmsnap", "generate", "--config", options.config_path])
@@ -62,6 +62,6 @@ class Helmsnap::Runner < Helmsnap::Service
   end
 
   def setup_deps!
-    Helmsnap::SetupDependencies.call(config)
+    Helmsnap::SetupDependencies.call(config, options)
   end
 end

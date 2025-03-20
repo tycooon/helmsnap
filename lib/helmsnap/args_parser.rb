@@ -3,7 +3,7 @@
 class Helmsnap::ArgsParser
   InvalidConfigPath = Class.new(RuntimeError)
 
-  Args = Struct.new(:config_path)
+  Args = Struct.new(:config_path, :skip_repo_cleanup)
 
   DEFAULT_CONFIG_PATH = Pathname.new(".helmsnap.yaml")
   CONFIG_PATH_HELP = %{Path to config (default: "#{DEFAULT_CONFIG_PATH}")}.freeze
@@ -38,14 +38,12 @@ class Helmsnap::ArgsParser
       opts.separator("")
       opts.separator("Specific options:")
 
-      opts.on("-c", "--config CONFIG_PATH", CONFIG_PATH_HELP) do |val|
-        path = Pathname.new(val)
+      opts.on("-c", "--config CONFIG_PATH", CONFIG_PATH_HELP) do |value|
+        set_config!(value)
+      end
 
-        unless path.file? && path.readable?
-          raise InvalidConfigPath, "Not a readable file: #{val}"
-        end
-
-        args.config_path = path
+      opts.on("--skip-repo-cleanup", "Skip cleaning up existing helmsnap-related helm repos") do
+        args.skip_repo_cleanup = true
       end
 
       opts.on("-v", "--version", "Show version") do
@@ -58,5 +56,15 @@ class Helmsnap::ArgsParser
         exit
       end
     end
+  end
+
+  def set_config!(value)
+    path = Pathname.new(value)
+
+    unless path.file? && path.readable?
+      raise InvalidConfigPath, "Not a readable file: #{value}"
+    end
+
+    args.config_path = path
   end
 end

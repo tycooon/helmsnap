@@ -1,15 +1,16 @@
 # frozen_string_literal: true
 
 class Helmsnap::Check < Helmsnap::Service
-  def initialize(config)
+  def initialize(config, options)
     super()
     self.config = config
+    self.options = options
   end
 
   def call
     temp_dir_path = Pathname.new(Dir.mktmpdir)
 
-    Helmsnap::Generate.call(config, snapshots_path: temp_dir_path)
+    Helmsnap::Generate.call(config, options, snapshots_path: temp_dir_path)
 
     result = run_cmd("which", "colordiff", allow_failure: true)
     util = result.success ? "colordiff" : "diff"
@@ -24,5 +25,5 @@ class Helmsnap::Check < Helmsnap::Service
 
   private
 
-  attr_accessor :config
+  attr_accessor :config, :options
 end

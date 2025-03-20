@@ -3,14 +3,15 @@
 class Helmsnap::SetupDependencies < Helmsnap::Service
   REPO_NAME_PREFIX = "helmsnap-"
 
-  def initialize(config)
+  def initialize(config, options)
     super()
     self.config = config
+    self.options = options
     self.processed_paths = Set.new
   end
 
   def call
-    clear_existing_repos!
+    clear_existing_repos! unless options.skip_repo_cleanup
 
     config.envs.flat_map(&:release_paths).each do |chart_path|
       setup!(chart_path)
@@ -19,7 +20,7 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
 
   private
 
-  attr_accessor :config, :processed_paths
+  attr_accessor :config, :options, :processed_paths
 
   def clear_existing_repos!
     result = run_cmd("helm", "repo", "ls", allow_failure: true).output

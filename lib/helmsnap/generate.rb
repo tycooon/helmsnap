@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
 class Helmsnap::Generate < Helmsnap::Service
-  def initialize(config, snapshots_path: nil)
+  def initialize(config, options, snapshots_path: nil)
     super()
     self.config = config
+    self.options = options
     self.snapshots_path = snapshots_path || config.snapshots_path
   end
 
   def call
-    Helmsnap::SetupDependencies.call(config)
+    Helmsnap::SetupDependencies.call(config, options)
 
     Dir.mktmpdir do |tmpdir|
       tmp_path = Pathname.new(tmpdir)
@@ -18,7 +19,7 @@ class Helmsnap::Generate < Helmsnap::Service
 
   private
 
-  attr_accessor :config, :snapshots_path
+  attr_accessor :config, :options, :snapshots_path
 
   def generate!(tmp_path)
     config.envs.each do |env|
