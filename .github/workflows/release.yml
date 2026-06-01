@@ -42,6 +42,12 @@ jobs:
         if: steps.check.outputs.exists == 'false'
         run: gem build helmsnap.gemspec
 
+      - name: Push gem to RubyGems
+        if: steps.check.outputs.exists == 'false'
+        run: gem push *.gem
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }}
+
       - uses: softprops/action-gh-release@v3
         if: steps.check.outputs.exists == 'false'
         with:
