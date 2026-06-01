@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    helmsnap (2.0.0)
+    helmsnap (2.0.1)
       colorize (~> 1.1)
 
 GEM
