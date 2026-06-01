@@ -66,7 +66,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=${{ steps.version.outputs.tag }}
+            type=semver,pattern=v{{version}},value=${{ steps.version.outputs.tag }}
             type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.tag }}
 
       - uses: docker/build-push-action@v7
