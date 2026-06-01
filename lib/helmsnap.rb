@@ -6,7 +6,6 @@ require "open3"
 require "optparse"
 require "pathname"
 require "shellwords"
-require "set"
 require "tmpdir"
 require "yaml"
 
@@ -28,8 +27,8 @@ module Helmsnap
 
   class Error < StandardError; end
 
-  def self.run_cmd(*cmd_parts, **options)
+  def self.run_cmd(*cmd_parts, **)
     cmd = Shellwords.join(cmd_parts)
-    Helmsnap::Command.call(cmd, **options)
+    Helmsnap::Command.call(cmd, **)
   end
 end

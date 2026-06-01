@@ -79,6 +79,5 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
     base_cmd = ["helm", "dependency", "update", chart_path]
     result = run_cmd(*base_cmd, "--skip-refresh", allow_failure: true)
     run_cmd(*base_cmd) unless result.success # Try with deps refresh in case of any failure
-    true
   end
 end
