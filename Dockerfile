@@ -1,4 +1,4 @@
-FROM alpine/helm
+FROM alpine/helm:3
 
 RUN apk add --update --no-cache ruby git colordiff
 
