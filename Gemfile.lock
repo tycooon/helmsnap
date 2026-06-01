@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     helmsnap (1.4.1)
-      colorize
+      colorize (~> 1.1)
 
 GEM
   remote: https://rubygems.org/
