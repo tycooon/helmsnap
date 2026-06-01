@@ -34,6 +34,9 @@ class Helmsnap::SetupDependencies < Helmsnap::Service
     normalized_path = chart_path.expand_path
     return if processed_paths.include?(normalized_path)
     processed_paths << normalized_path
+    # Remote chart references (e.g. "bitnami/postgresql", "oci://...") are not
+    # local directories — skip local dependency resolution for them.
+    return unless normalized_path.directory?
 
     dep_list = get_dependency_list(chart_path)
 
