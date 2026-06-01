@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Helmsnap::ArgsParser
-  InvalidConfigPath = Class.new(RuntimeError)
+  class InvalidConfigPath < RuntimeError; end
 
   Args = Struct.new(:config_path, :skip_repo_cleanup)
 

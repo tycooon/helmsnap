@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary = "A tool for creating and checking helm chart snapshots."
   spec.homepage = "https://github.com/tycooon/helmsnap"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.0.0"
+  spec.required_ruby_version = ">= 3.3.0"
 
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
   spec.metadata["homepage_uri"] = spec.homepage
@@ -30,5 +30,5 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "colorize"
+  spec.add_dependency "colorize", "~> 1.1"
 end
