@@ -45,9 +45,8 @@ class Helmsnap::Generate < Helmsnap::Service
     content.gsub!(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+/, "2022-01-01 00:00:00.000")
     content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00-00")
     content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00")
-    content.gsub!(/\n{3,}/, "\n\n")
-    content.gsub!(/\n\n+---/, "\n---")
-    content.gsub!(/\n+\z/, "\n")
+    content.gsub!(/(\n[ \t]*)+---/, "\n---")
+    content.gsub!(/(\n[ \t]*)+\z/, "\n")
     path.write(content)
   end
 end
