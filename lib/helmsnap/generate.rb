@@ -34,15 +34,20 @@ class Helmsnap::Generate < Helmsnap::Service
       )
     end
 
-    tmp_path.glob(["**/*yaml", "**/*.yml"]).each do |path|
-      content = path.read
-      content.gsub!(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+/, "2022-01-01 00:00:00.000")
-      content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00-00")
-      content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00")
-      path.write(content)
-    end
+    tmp_path.glob(["**/*yaml", "**/*.yml"]).each { |path| normalize!(path) }
 
     FileUtils.rmtree(snapshots_path)
     FileUtils.cp_r(tmp_path, snapshots_path)
+  end
+
+  def normalize!(path)
+    content = path.read
+    content.gsub!(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d+/, "2022-01-01 00:00:00.000")
+    content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00-00")
+    content.gsub!(/\d\d\d\d-\d\d-\d\d-\d\d-\d\d/, "2022-01-01-00-00")
+    content.gsub!(/\n{3,}/, "\n\n")
+    content.gsub!(/\n\n+---/, "\n---")
+    content.gsub!(/\n+\z/, "\n")
+    path.write(content)
   end
 end
