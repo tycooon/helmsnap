@@ -1,6 +1,6 @@
 FROM alpine/helm:4.3.0@sha256:a6cf54599ccb99d90cf0712b30f03fdb3cab062e6b94e0418cc4db7e8a1464b2
 
-RUN apk add --update --no-cache ruby git colordiff
+RUN apk upgrade --update --no-cache && apk add --no-cache ruby git colordiff
 
 WORKDIR /wd
 

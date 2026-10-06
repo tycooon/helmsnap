@@ -46,10 +46,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Verify packaged runtime tools
+        id: tools
         env:
           IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           image_tag="$(printf '%s\n' "$IMAGE_TAGS" | head -n 1)"
+          printf 'image=%s\n' "$image_tag" >> "$GITHUB_OUTPUT"
           docker run --rm "$image_tag" sh -ec '
             helm version --short | grep -E "^v4\.3\.0([+]|$)"
             helmfile --version | grep -E "^helmfile version v1\.8\.1$"
@@ -58,6 +60,18 @@ jobs:
             test ! -e /wd/.git
             test ! -d /wd/vendor
           '
+
+      - name: Check runtime security updates
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.75.0
+          scan-type: image
+          image-ref: ${{ steps.tools.outputs.image }}
+          scanners: vuln
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: 'false'
+          exit-code: '1'
 
       - name: Publish verified image
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
