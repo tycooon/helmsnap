@@ -18,21 +18,21 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Extract version
         id: version
         run: |
           version=$(grep -oP '(?<=VERSION = ")[^"]+' lib/helmsnap/version.rb)
-          echo "tag=v$version" >> $GITHUB_OUTPUT
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
       - name: Check if release already exists
         id: check
         run: |
           if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,18 +49,18 @@ jobs:
 
       - name: Push gem to RubyGems
         if: steps.check.outputs.exists == 'false'
-        run: gem push *.gem
+        run: gem push ./*.gem
         env:
           GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }}
 
-      - uses: docker/login-action@v4
+      - uses: docker/login-action@v4.6.0
         if: steps.check.outputs.exists == 'false'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v6
+      - uses: docker/metadata-action@v6.2.0
         if: steps.check.outputs.exists == 'false'
         id: meta
         with:
@@ -69,7 +69,7 @@ jobs:
             type=semver,pattern=v{{version}},value=${{ steps.version.outputs.tag }}
             type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.tag }}
 
-      - uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@v7.4.0
         if: steps.check.outputs.exists == 'false'
         with:
           context: .

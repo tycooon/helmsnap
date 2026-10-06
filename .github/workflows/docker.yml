@@ -15,22 +15,55 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
-      - uses: docker/login-action@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      - name: Verify runtime packaging and library
+        run: bundle exec rake
+
+      - uses: docker/login-action@v4.6.0
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v6
+      - uses: docker/metadata-action@v6.2.0
         id: meta
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@v7.4.0
         with:
           context: .
-          push: true
+          push: false
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Verify packaged runtime tools
+        env:
+          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          image_tag="$(printf '%s\n' "$IMAGE_TAGS" | head -n 1)"
+          docker run --rm "$image_tag" sh -ec '
+            helm version --short | grep -E "^v4\.3\.0([+]|$)"
+            helmfile --version | grep -E "^helmfile version v1\.8\.1$"
+            helmsnap --version
+            ruby -r helmsnap -e "puts Helmsnap::VERSION"
+            test ! -e /wd/.git
+            test ! -d /wd/vendor
+          '
+
+      - name: Publish verified image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          while IFS= read -r image_tag; do
+            docker push "$image_tag"
+          done <<< "$IMAGE_TAGS"
