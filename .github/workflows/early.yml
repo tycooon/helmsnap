@@ -1,0 +1,85 @@
+name: Verify and publish Kubernetes 1.30 prerequisite client
+
+on: [push, pull_request]
+
+env:
+  EARLY_IMAGE: ghcr.io/${{ github.repository }}:helm3.18.6-security-20261006
+
+jobs:
+  early:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      - name: Verify runtime packaging and library
+        run: bundle exec rake
+
+      - uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          file: Dockerfile.early
+          push: false
+          load: true
+          tags: ${{ env.EARLY_IMAGE }}
+
+      - name: Verify patched runtime identity
+        run: |
+          docker run --rm "$EARLY_IMAGE" sh -ec '
+            helm version --short | grep -E "^v3\.18\.6\+zapravila\.20261006\.gb76a950$"
+            helmfile --version | grep -E "^helmfile version v1\.8\.1\+zapravila\.20261006$"
+            helmsnap --version
+            ruby -r helmsnap -e "puts Helmsnap::VERSION"
+            test ! -e /wd/.git
+            test ! -d /wd/vendor
+          '
+
+      - name: Check runtime security updates
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.75.0
+          scan-type: image
+          image-ref: ${{ env.EARLY_IMAGE }}
+          scanners: vuln
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: 'false'
+          exit-code: '1'
+
+      - uses: helm/kind-action@v1.15.0
+        with:
+          version: v0.33.0
+          node_image: kindest/node:v1.30.13@sha256:397209b3d947d154f6641f2d0ce8d473732bd91c87d9575ade99049aa33cd648
+          kubectl_version: v1.30.13
+          cluster_name: helmsnap-early
+          wait: 120s
+
+      - name: Verify live Kubernetes 1.30 operations
+        run: |
+          tools_dir="$(mktemp -d)"
+          container="$(docker create "$EARLY_IMAGE" true)"
+          trap 'docker rm "$container" >/dev/null; rm -rf "$tools_dir"' EXIT
+          docker cp "$container:/usr/bin/helm" "$tools_dir/helm"
+          docker cp "$container:/usr/local/bin/helmfile" "$tools_dir/helmfile"
+          chmod +x "$tools_dir/helm" "$tools_dir/helmfile"
+          PATH="$tools_dir:$PATH" HELMSNAP_DISPOSABLE_CLUSTER=yes \
+            bash scripts/check-bridge-cluster.sh "$HOME/.kube/config" early
+
+      - uses: docker/login-action@v4.6.0
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish verified prerequisite tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: docker push "$EARLY_IMAGE"

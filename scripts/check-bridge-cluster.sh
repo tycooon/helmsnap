@@ -3,12 +3,16 @@ set -euo pipefail
 
 # Run only against a disposable cluster; this creates and deletes a namespace.
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ] || [ "${HELMSNAP_DISPOSABLE_CLUSTER:-}" != yes ]; then
-  echo 'Usage: HELMSNAP_DISPOSABLE_CLUSTER=yes check-bridge-cluster.sh KUBECONFIG [bridge|default-security]' >&2
+  echo 'Usage: HELMSNAP_DISPOSABLE_CLUSTER=yes check-bridge-cluster.sh KUBECONFIG [early|bridge|default-security]' >&2
   exit 2
 fi
 export KUBECONFIG="$1"
 test -f "$KUBECONFIG"
 case "${2:-bridge}" in
+  early)
+    helm version --short | grep -E '^v3\.18\.6\+zapravila\.20261006\.gb76a950$'
+    kubectl get --raw=/version | grep -E '"gitVersion"[[:space:]]*:[[:space:]]*"v1\.30\.'
+    ;;
   bridge)
     helm version --short | grep -E '^v4\.1\.4\+zapravila\.20261006\.g05fa379$'
     kubectl get --raw=/version | grep -E '"gitVersion"[[:space:]]*:[[:space:]]*"v1\.32\.'

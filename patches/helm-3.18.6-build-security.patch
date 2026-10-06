@@ -1,0 +1,59 @@
+diff --git a/cmd/helm/version.go b/cmd/helm/version.go
+--- a/cmd/helm/version.go
++++ b/cmd/helm/version.go
+@@ -20,5 +20,6 @@
+ 	"fmt"
+ 	"io"
++	"strings"
+ 	"text/template"
+ 
+ 	"github.com/spf13/cobra"
+@@ -94,7 +95,11 @@
+ 	v := version.Get()
+ 	if short {
+ 		if len(v.GitCommit) >= 7 {
+-			return fmt.Sprintf("%s+g%s", v.Version, v.GitCommit[:7])
++			separator := "+"
++			if strings.Contains(v.Version, "+") {
++				separator = "."
++			}
++			return fmt.Sprintf("%s%sg%s", v.Version, separator, v.GitCommit[:7])
+ 		}
+ 		return version.GetVersion()
+ 	}
+diff --git a/cmd/helm/early_version_test.go b/cmd/helm/early_version_test.go
+new file mode 100644
+--- /dev/null
++++ b/cmd/helm/early_version_test.go
+@@ -0,0 +1,22 @@
++package main
++
++import (
++	"strings"
++	"testing"
++
++	"helm.sh/helm/v3/internal/version"
++)
++
++func TestShortVersionBuildMetadata(t *testing.T) {
++	info := version.Get()
++	if !strings.Contains(info.Version, "+") || len(info.GitCommit) < 7 {
++		t.Skip("run with build metadata and git commit linker fields")
++	}
++	got := formatVersion(true)
++	if strings.Count(got, "+") != 1 {
++		t.Fatalf("invalid semantic version build metadata: %s", got)
++	}
++	if !strings.HasSuffix(got, ".g"+info.GitCommit[:7]) {
++		t.Fatalf("short version lost source identity: %s", got)
++	}
++}
+diff --git a/pkg/registry/client.go b/pkg/registry/client.go
+--- a/pkg/registry/client.go
++++ b/pkg/registry/client.go
+@@ -385,3 +385,5 @@
+ 	}
+ 
++	// Connections opened under old TLS settings must not bypass the new ones.
++	transport.CloseIdleConnections()
+ 	return transport.TLSClientConfig, nil
