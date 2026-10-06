@@ -1,0 +1,50 @@
+diff --git a/pkg/cmd/version.go b/pkg/cmd/version.go
+--- a/pkg/cmd/version.go
++++ b/pkg/cmd/version.go
+@@ -20,5 +20,6 @@
+ 	"fmt"
+ 	"io"
++	"strings"
+ 	"text/template"
+ 
+ 	"github.com/spf13/cobra"
+@@ -96,7 +97,11 @@
+ 	v := version.Get()
+ 	if short {
+ 		if len(v.GitCommit) >= 7 {
+-			return fmt.Sprintf("%s+g%s", v.Version, v.GitCommit[:7])
++			separator := "+"
++			if strings.Contains(v.Version, "+") {
++				separator = "."
++			}
++			return fmt.Sprintf("%s%sg%s", v.Version, separator, v.GitCommit[:7])
+ 		}
+ 		return version.GetVersion()
+ 	}
+diff --git a/pkg/cmd/security_version_test.go b/pkg/cmd/security_version_test.go
+new file mode 100644
+--- /dev/null
++++ b/pkg/cmd/security_version_test.go
+@@ -0,0 +1,22 @@
++package cmd
++
++import (
++	"strings"
++	"testing"
++
++	"helm.sh/helm/v4/internal/version"
++)
++
++func TestShortVersionBuildMetadata(t *testing.T) {
++	info := version.Get()
++	if !strings.Contains(info.Version, "+") || len(info.GitCommit) < 7 {
++		t.Skip("run with build metadata and git commit linker fields")
++	}
++	got := formatVersion(true)
++	if strings.Count(got, "+") != 1 {
++		t.Fatalf("invalid semantic version build metadata: %s", got)
++	}
++	if !strings.HasSuffix(got, ".g"+info.GitCommit[:7]) {
++		t.Fatalf("short version lost source identity: %s", got)
++	}
++}

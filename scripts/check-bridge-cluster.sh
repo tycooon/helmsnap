@@ -2,15 +2,24 @@
 set -euo pipefail
 
 # Run only against a disposable cluster; this creates and deletes a namespace.
-if [ "$#" -ne 1 ] || [ "${HELMSNAP_DISPOSABLE_CLUSTER:-}" != yes ]; then
-  echo 'Usage: HELMSNAP_DISPOSABLE_CLUSTER=yes check-bridge-cluster.sh KUBECONFIG' >&2
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ] || [ "${HELMSNAP_DISPOSABLE_CLUSTER:-}" != yes ]; then
+  echo 'Usage: HELMSNAP_DISPOSABLE_CLUSTER=yes check-bridge-cluster.sh KUBECONFIG [bridge|default-security]' >&2
   exit 2
 fi
 export KUBECONFIG="$1"
 test -f "$KUBECONFIG"
-helm version --short | grep -E '^v4\.1\.4\+zapravila\.20261006\.g05fa379$'
+case "${2:-bridge}" in
+  bridge)
+    helm version --short | grep -E '^v4\.1\.4\+zapravila\.20261006\.g05fa379$'
+    kubectl get --raw=/version | grep -E '"gitVersion"[[:space:]]*:[[:space:]]*"v1\.32\.'
+    ;;
+  default-security)
+    helm version --short | grep -E '^v4\.3\.0\+zapravila\.20261006\.gbec5b06$'
+    kubectl get --raw=/version | grep -E '"gitVersion"[[:space:]]*:[[:space:]]*"v1\.34\.'
+    ;;
+  *) echo 'Unsupported disposable runtime selection' >&2; exit 2 ;;
+esac
 helmfile --version | grep -E '^helmfile version v1\.8\.1\+zapravila\.20261006$'
-kubectl get --raw=/version | grep -E '"gitVersion"[[:space:]]*:[[:space:]]*"v1\.32\.'
 
 fixture_dir="$(mktemp -d)"
 namespace="helmsnap-bridge-$(date +%s)-$$"
@@ -56,4 +65,4 @@ if [ -n "$remaining" ]; then
   echo 'Uninstall left the fixture ConfigMap behind' >&2
   exit 1
 fi
-echo 'Bridge install, upgrade, rollback, Helmfile sync and uninstall passed'
+echo 'Install, upgrade, rollback, Helmfile sync and uninstall passed'

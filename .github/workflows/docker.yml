@@ -9,6 +9,7 @@ env:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     permissions:
       contents: read
@@ -53,8 +54,8 @@ jobs:
           image_tag="$(printf '%s\n' "$IMAGE_TAGS" | head -n 1)"
           printf 'image=%s\n' "$image_tag" >> "$GITHUB_OUTPUT"
           docker run --rm "$image_tag" sh -ec '
-            helm version --short | grep -E "^v4\.3\.0([+]|$)"
-            helmfile --version | grep -E "^helmfile version v1\.8\.1$"
+            helm version --short | grep -E "^v4\.3\.0\+zapravila\.20261006\.gbec5b06$"
+            helmfile --version | grep -E "^helmfile version v1\.8\.1\+zapravila\.20261006$"
             helmsnap --version
             ruby -r helmsnap -e "puts Helmsnap::VERSION"
             test ! -e /wd/.git
@@ -72,6 +73,27 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: 'false'
           exit-code: '1'
+
+      - uses: helm/kind-action@v1.15.0
+        with:
+          version: v0.33.0
+          node_image: kindest/node:v1.34.3@sha256:08497ee19eace7b4b5348db5c6a1591d7752b164530a36f855cb0f2bdcbadd48
+          kubectl_version: v1.34.3
+          cluster_name: helmsnap-default
+          wait: 120s
+
+      - name: Verify live Kubernetes 1.34 operations
+        env:
+          RUNTIME_IMAGE: ${{ steps.tools.outputs.image }}
+        run: |
+          tools_dir="$(mktemp -d)"
+          container="$(docker create "$RUNTIME_IMAGE" true)"
+          trap 'docker rm "$container" >/dev/null; rm -rf "$tools_dir"' EXIT
+          docker cp "$container:/usr/bin/helm" "$tools_dir/helm"
+          docker cp "$container:/usr/local/bin/helmfile" "$tools_dir/helmfile"
+          chmod +x "$tools_dir/helm" "$tools_dir/helmfile"
+          PATH="$tools_dir:$PATH" HELMSNAP_DISPOSABLE_CLUSTER=yes \
+            bash scripts/check-bridge-cluster.sh "$HOME/.kube/config" default-security
 
       - name: Publish verified image
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
