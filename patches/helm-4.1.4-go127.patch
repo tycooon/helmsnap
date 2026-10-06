@@ -1,0 +1,139 @@
+diff --git a/internal/version/clientgo_test.go b/internal/version/clientgo_test.go
+--- a/internal/version/clientgo_test.go
++++ b/internal/version/clientgo_test.go
+@@ -19,2 +19,3 @@
+ import (
++	"strings"
+ 	"testing"
+@@ -25,6 +26,8 @@
+ func TestK8sClientGoModVersion(t *testing.T) {
+-	// Unfortunately, test builds don't include debug info / module info
+-	// So we expect "K8sIOClientGoModVersion" to return error
+-	_, err := K8sIOClientGoModVersion()
+-	require.ErrorContains(t, err, "k8s.io/client-go not found in build info")
++	v, err := K8sIOClientGoModVersion()
++	if err != nil {
++		require.ErrorContains(t, err, "k8s.io/client-go not found in build info")
++		return
++	}
++	require.True(t, strings.HasPrefix(v, "v"), "expected a semver-like version, got %q", v)
+ }
+diff --git a/pkg/cmd/version.go b/pkg/cmd/version.go
+--- a/pkg/cmd/version.go
++++ b/pkg/cmd/version.go
+@@ -20,5 +20,6 @@
+ 	"fmt"
+ 	"io"
++	"strings"
+ 	"text/template"
+ 
+ 	"github.com/spf13/cobra"
+@@ -96,7 +97,11 @@
+ 	v := version.Get()
+ 	if short {
+ 		if len(v.GitCommit) >= 7 {
+-			return fmt.Sprintf("%s+g%s", v.Version, v.GitCommit[:7])
++			separator := "+"
++			if strings.Contains(v.Version, "+") {
++				separator = "."
++			}
++			return fmt.Sprintf("%s%sg%s", v.Version, separator, v.GitCommit[:7])
+ 		}
+ 		return version.GetVersion()
+ 	}
+diff --git a/pkg/cmd/bridge_version_test.go b/pkg/cmd/bridge_version_test.go
+new file mode 100644
+--- /dev/null
++++ b/pkg/cmd/bridge_version_test.go
+@@ -0,0 +1,22 @@
++package cmd
++
++import (
++	"strings"
++	"testing"
++
++	"helm.sh/helm/v4/internal/version"
++)
++
++func TestShortVersionBuildMetadata(t *testing.T) {
++	info := version.Get()
++	if !strings.Contains(info.Version, "+") || len(info.GitCommit) < 7 {
++		t.Skip("run with build metadata and git commit linker fields")
++	}
++	got := formatVersion(true)
++	if strings.Count(got, "+") != 1 {
++		t.Fatalf("invalid semantic version build metadata: %s", got)
++	}
++	if !strings.HasSuffix(got, ".g"+info.GitCommit[:7]) {
++		t.Fatalf("short version lost source identity: %s", got)
++	}
++}
+diff --git a/pkg/registry/client.go b/pkg/registry/client.go
+--- a/pkg/registry/client.go
++++ b/pkg/registry/client.go
+@@ -321,3 +321,5 @@
+ 	}
+ 
++	// Connections opened under old TLS settings must not bypass the new ones.
++	transport.CloseIdleConnections()
+ 	return transport.TLSClientConfig, nil
+diff --git a/pkg/chart/v2/util/save_test.go b/pkg/chart/v2/util/save_test.go
+--- a/pkg/chart/v2/util/save_test.go
++++ b/pkg/chart/v2/util/save_test.go
+@@ -275,4 +275,2 @@
+ func TestRepeatableSave(t *testing.T) {
+-	tmp := t.TempDir()
+-	defer os.RemoveAll(tmp)
+ 	modTime := time.Date(2021, 9, 1, 20, 34, 58, 651387237, time.UTC)
+@@ -280,3 +280,2 @@
+ 		chart *chart.Chart
+-		want  string
+ 	}{
+@@ -300,3 +300,2 @@
+ 			},
+-			want: "fea2662522317b65c2788ff9e5fc446a9264830038dac618d4449493d99b3257",
+ 		},
+@@ -325,3 +325,2 @@
+ 			},
+-			want: "7ae92b2f274bb51ea3f1969e4187d78cc52b5f6f663b44b8fb3b40bcb8ee46f3",
+ 		},
+@@ -327,20 +327,25 @@
+ 	for _, test := range tests {
+ 		t.Run(test.name, func(t *testing.T) {
+-			// create package
+-			dest := path.Join(tmp, "newdir")
+-			where, err := Save(test.chart, dest)
+-			if err != nil {
+-				t.Fatalf("Failed to save: %s", err)
+-			}
+-			// get shasum for package
+-			result, err := sha256Sum(where)
+-			if err != nil {
+-				t.Fatalf("Failed to check shasum: %s", err)
+-			}
+-			// assert that the package SHA is what we wanted.
+-			if result != test.want {
+-				t.Errorf("FormatName() result = %v, want %v", result, test.want)
++			first, err := Save(test.chart, path.Join(t.TempDir(), "newdir"))
++			if err != nil {
++				t.Fatalf("Failed to save: %s", err)
++			}
++			second, err := Save(test.chart, path.Join(t.TempDir(), "newdir"))
++			if err != nil {
++				t.Fatalf("Failed to save: %s", err)
++			}
++			firstSum, err := sha256Sum(first)
++			if err != nil {
++				t.Fatalf("Failed to check shasum: %s", err)
++			}
++			secondSum, err := sha256Sum(second)
++			if err != nil {
++				t.Fatalf("Failed to check shasum: %s", err)
++			}
++			// Compression bytes vary across Go releases; repeated saves must agree.
++			if firstSum != secondSum {
++				t.Errorf("Save() is not repeatable: %s != %s", firstSum, secondSum)
+ 			}
+ 		})
+ 	}
+ }

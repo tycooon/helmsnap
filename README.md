@@ -65,6 +65,22 @@ The Docker build refreshes Alpine packages before adding runtime dependencies. T
 - [Helmfile](https://github.com/roboll/helmfile), which in turn relies on [Helm](https://github.com/helm/helm).
 - Colordiff or diff utility.
 
+### Kubernetes 1.32 bridge
+
+The separate `Dockerfile.bridge` builds Helm `v4.1.4+zapravila.20261006` and Helmfile `v1.8.1+zapravila.20261006` from checksummed upstream source archives. For example, a Kubernetes 1.32 server can use this bridge while the default Helm 4.3 image requires Kubernetes 1.34 or later. Helm 4.1 supports Kubernetes 1.32–1.35; Kubernetes 1.30–1.31 must keep Helm operations frozen during the initial infrastructure upgrades in the [upgrade sequence](https://github.com/zapravila-org/mevbot/issues/2183).
+
+The bridge rebuilds both tools with Go 1.27.1 and explicit security updates to x/crypto, x/net, x/text and oras-go. It retains upstream Kubernetes client versions and replacements. The small tracked Helm patch backports the newer release's TLS idle-connection reset and adjusts client metadata and repeatable archive tests for the newer Go toolchain. A regression test also ensures `helm version --short` combines the custom build metadata and source commit into one valid semantic version field, such as `v4.1.4+zapravila.20261006.g05fa379`. Version metadata identifies the modified build rather than an unchanged upstream binary. Upstream licenses are included in the image.
+
+The bridge workflow tests the affected upstream packages, runtime packaging, tool identity, current HIGH/CRITICAL vulnerability findings and actual install, upgrade, rollback, Helmfile sync and uninstall against disposable Kubernetes 1.32. It publishes only `ghcr.io/tycooon/helmsnap:helm4.1.4-security-20261006` after every check passes on `master`; it never changes the default image's tags. Consumers must select the bridge explicitly and pin its published digest. Their live cluster-version gate remains required. Snapshot rendering alone does not prove live API compatibility. The scan still reports the UNKNOWN `GO-2026-5932` advisory for the unmaintained x/crypto OpenPGP package in both binaries, so this image is not vulnerability-free.
+
+To repeat the live check, supply a **disposable** Kubernetes 1.32 cluster and the patched binaries on `PATH`:
+
+```sh
+HELMSNAP_DISPOSABLE_CLUSTER=yes bash scripts/check-bridge-cluster.sh /path/to/disposable-kubeconfig
+```
+
+The check creates a uniquely named namespace, verifies ConfigMap values through each release operation and removes its namespace on exit. It does not exercise application workloads, storage, controllers or production recovery.
+
 ## Features
 
 ### Helm dependency management

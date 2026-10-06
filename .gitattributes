@@ -1,0 +1,2 @@
+# Unified patch context preserves upstream indentation and blank lines.
+patches/*.patch whitespace=-blank-at-eol,-space-before-tab
