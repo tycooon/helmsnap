@@ -55,7 +55,13 @@ You can also override configuration file location using `--config` option.
 
 ## Dependencies
 
-- Ruby 3.0+.
+The Docker runtime pins Helm 4.3.0 and Helmfile 1.8.1 by version and immutable multi-architecture image digest. For example, `helm version --short` reports `v4.3.0` and `helmsnap --version` reports the packaged library version. Runtime builds copy only the gem specification, library, executable and public documentation; they do not depend on Git metadata or include checkout credentials and local dependency caches.
+
+Helm 4.3 supports Kubernetes 1.34–1.37 according to [Helm's version policy](https://helm.sh/docs/topics/version_skew/). Rendering local chart snapshots does not establish compatibility with an older live API server. The [upgrade sequence](https://github.com/zapravila-org/mevbot/issues/2183) must supply its separately verified compatible client and cluster-version gate before live operations on earlier versions.
+
+The Docker build refreshes Alpine packages before adding runtime dependencies. The Docker workflow checks packaged tool versions and scans the loaded image with Trivy 0.75.0 against the current vulnerability database before publication. HIGH and CRITICAL findings, including those without a published fix, fail the job; lower severities remain visible but do not block it. Branches and pull requests run the checks, and only a push to `master` publishes the workflow image. The separate release workflow preserves versioned gem/image publication. `bundle exec rake` checks the library, packaging from a source tree without Git, and Ruby style.
+
+- Ruby 3.3+.
 - [Helmfile](https://github.com/roboll/helmfile), which in turn relies on [Helm](https://github.com/helm/helm).
 - Colordiff or diff utility.
 

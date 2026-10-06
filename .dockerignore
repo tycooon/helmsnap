@@ -1,4 +1,7 @@
 /.bundle/
+/.git
+/.plans/
+/vendor/
 /.yardoc
 /_yardoc/
 /coverage/
